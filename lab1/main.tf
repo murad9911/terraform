@@ -7,6 +7,7 @@ resource "aws_instance" "name" {
   ami = "ami-0b5eea76982371e91"
   instance_type = "t2.micro"
   subnet_id = aws_subnet.public.id
+  vpc_security_group_ids = [ aws_security_group.http.id ]
   depends_on = [ aws_vpc.test ]
 
   tags = {
@@ -49,15 +50,13 @@ resource "aws_security_group" "http" {
         protocol = "tcp"        
       }
     }
-    dynamic "egress" {
-      for_each = [ "80", "443" ]
-      content {
-        description = "allow_internet"
-        from_port = egress.value
-        to_port = egress.value
-        cidr_blocks = ["0.0.0.0/0"]
-        protocol = "tcp"      
-        }
+
+     egress {
+      description = "allow_internet"
+      from_port = 0
+      to_port = 0
+      cidr_blocks = ["0.0.0.0/0"]
+      protocol = "-1"      
       }
     }
 
