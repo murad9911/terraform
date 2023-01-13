@@ -60,3 +60,42 @@ resource "aws_security_group" "http" {
       }
     }
 
+  resource "aws_db_instance" "default" {
+      allocated_storage    = 10
+      db_name              = "mydb"
+      engine               = "mysql"
+      engine_version       = "5.7"
+      instance_class       = "db.t3.micro"
+      username             = "admin"
+      password             = random_password.dbpass.result
+      parameter_group_name = "default.mysql5.7"
+      skip_final_snapshot  = true
+      identifier = "test"
+}
+
+  resource "random_password" "dbpass" {
+      length = 20
+      special = false
+  }
+
+  resource "aws_secretsmanager_secret" "dbpass" {
+      name = "dbpass"
+  }   
+  
+
+  resource "aws_secretsmanager_secret_version" "dbpass" {
+    secret_id = aws_secretsmanager_secret.dbpass.id
+     secret_string = jsonencode(
+    {
+      username = "${var.dbuser}"
+      password = aws_db_instance.default.password
+      engine   = "mysql"
+      host     = aws_db_instance.default.endpoint
+    }
+  )
+  }
+
+  variable "dbuser" {
+      type =string
+      default = "master"
+  }
