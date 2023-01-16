@@ -5,10 +5,12 @@ provider "aws" {
 resource "random_password" "dbpassword" {
       length = 20
       special = true
+      override_special = "@_"
   }
 
   resource "aws_secretsmanager_secret" "dbpassword" {
       name = "dbpassword"
+      recovery_window_in_days = 0
   }   
   
 
